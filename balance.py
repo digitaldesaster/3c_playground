@@ -174,7 +174,7 @@ total_bot_volume,avg_safety_order = getBots(account_id,20)
 risk_factor = round(100/total_capital*total_bot_volume,2)
 print ('Riskfactor with '+ str(avg_safety_order) + ' SO: ' + str(risk_factor) + '%')
 
-#asuming avg_safety_order: 20
+#asuming avg_safety_order: 30
 total_bot_volume,avg_safety_order = getBots(account_id,30)
 risk_factor = round(100/total_capital*total_bot_volume,2)
 print ('Riskfactor with '+ str(avg_safety_order) + ' SO: ' + str(risk_factor) + '%')
