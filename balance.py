@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from py3cw.request import Py3CW
 
+#playin around with 3commas api
+#this scripts assumes that you are trading USDT pairs. 
 
 #put in you key and secret from 3commas
 key = ''
