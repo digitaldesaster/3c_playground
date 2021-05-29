@@ -3,7 +3,7 @@
 from py3cw.request import Py3CW
 
 #playin around with 3commas api
-#this scripts assumes that you are trading USDT pairs. 
+#this scripts assumes that you are trading USDT pairs.
 
 #put in you key and secret from 3commas
 key = ''
@@ -64,23 +64,33 @@ def getDeals(account_id,total_volume_only=False):
 )
     coins_in_deals = []
     total_volume = 0
+    total_so=0
+    total_usd_profit = 0
     for coin in data:
         #print (account_id)
         #for parameter in coin:
         #    print (parameter)
+
         coin_symbol = coin['to_currency']
         #print (coin['pair'])
         bought_volume = coin['bought_volume']
         total_volume = total_volume + round(float(bought_volume),2)
+        active_so = coin['completed_safety_orders_count']
+        total_so = total_so + active_so
+        current_price = coin['current_price']
+        take_profit_price = coin['take_profit_price']
+        actual_usd_profit = coin['actual_usd_profit']
+        total_usd_profit = total_usd_profit + round(float(actual_usd_profit),2)
         #print (coin_symbol,bought_volume)
-        coins_in_deals.append({'coin': coin_symbol,'bought_volume':bought_volume})
+        coins_in_deals.append({'coin': coin_symbol,'bought_volume':bought_volume,'active_so':active_so,'current_price':current_price,'take_profit_price':take_profit_price,'actual_usd_profit':actual_usd_profit})
         #print (coin['current_price'])
         #print (coin['take_profit_price'])
         #print (coin['bought_amount'])
     if total_volume_only==True:
         return total_volume
     else:
-        return coins_in_deals
+        return {'coins_in_deals' : coins_in_deals,'total_usd_profit' : round(total_usd_profit,2),'total_so':total_so
+        }
 
 def getBots(account_id,so=0):
     error, data = p3cw.request(
@@ -96,6 +106,8 @@ def getBots(account_id,so=0):
     total_volume = 0
 
     avg_safety_order = 0
+
+    active_bots = len(data)
 
     for coin in data:
         i=0
@@ -125,7 +137,7 @@ def getBots(account_id,so=0):
 
         total_volume = total_volume + total_volume_of_coin
 
-    return round(total_volume,2),round(avg_safety_order,2)
+    return round(total_volume,2),round(avg_safety_order,2),active_bots
 
 
         #print (coin['account_id'])
@@ -140,43 +152,72 @@ def getBots(account_id,so=0):
     #print (coins_in_deals)
 
 
-#get all accounts and ids
+def checkAccount(acc_id):
+
+    #get all accounts and ids
+    accounts =  getAccounts()
+
+    #take the first account
+    account_id = accounts[acc_id]['id']
+
+    #usdt available on exchange now!
+    get_coin ='BUSD'
+    usdt_value = float(getCoinBalance(account_id,get_coin))
+    #print ('Balance of ' + get_coin +': '+ str(usdt_value))
+
+    #usdt available on exchange now!
+    get_coin ='USDT'
+    usdt_value = usdt_value + float(getCoinBalance(account_id,get_coin))
+
+    #print ('Balance of ' + get_coin +': '+ str(round(usdt_value,2)))
+
+    #gets balance of all coins in usd
+    #all_coins = getCoinBalance(account_id)
+    #print (all_coins)
+
+    #total_volume of all deals at the moment
+    usdt_in_deals = round(getDeals(account_id,True),2)
+    #print ('USDT stuck in deals: ' + str(total_volume))
+
+    #sum of available usdt and volume stuck in deals..
+    total_capital = round (usdt_value + usdt_in_deals,2)
+    #print ('Total current balance: ' + str(total_capital))
+
+    #available USDT in percent from total_capital (coins on exchange excluded)
+    liquidity = round(100 - (100/total_capital *usdt_in_deals),2)
+    #print ('Liquidity in % :' + str(liquidity)
+
+    #calculated avg_safety_order
+    total_bot_volume,avg_safety_order,active_bots = getBots(account_id)
+    risk_factor = round(100/total_capital*total_bot_volume,2)
+
+    #print ('Total Bot Volume: '+ str(total_bot_volume))
+
+    #print ('Riskfactor with '+ str(avg_safety_order) + ' SO: ' + str(risk_factor) + '%')
+
+    #print ('Active Bots: ' + str(active_bots))
+
+    return {'usdt_balance' : usdt_value,'usdt_in_deals' : usdt_in_deals,'total_capital' : total_capital,'liquidity': liquidity,'total_bot_volume':total_bot_volume,'avg_safety_order':avg_safety_order,'active_bots':active_bots,'risk_factor':risk_factor}
+
+bot_status = checkAccount(1)
+
+print (bot_status)
+
+
 accounts =  getAccounts()
+account_id = accounts[1]['id']
 
-#take the first account
-account_id = accounts[0]['id']
+print (getDeals(account_id))
 
-#usdt available on exchange now!
-get_coin ='USDT'
-usdt_value = float(getCoinBalance(account_id,get_coin))
-print ('Balance of ' + get_coin +': '+ str(usdt_value))
 
-#gets balance of all coins in usd
-#all_coins = getCoinBalance(account_id)
-#print (all_coins)
 
-#total_volume of all deals at the moment
-total_volume = round(getDeals(account_id,True),2)
-print ('USDT stuck in deals: ' + str(total_volume))
-
-#sum of available usdt and volume stuck in deals..
-total_capital = round (usdt_value + total_volume,2)
-print ('Total current balance: ' + str(total_capital))
-
-#available USDT in percent from total_capital (coins on exchange excluded)
-print ('Liquidity in % :' + str((round(100 - (100/total_capital *total_volume),2))))
-
-#calculated avg_safety_order
-total_bot_volume,avg_safety_order = getBots(account_id)
-risk_factor = round(100/total_capital*total_bot_volume,2)
-print ('Riskfactor with '+ str(avg_safety_order) + ' SO: ' + str(risk_factor) + '%')
-
-#asuming avg_safety_order: 20
-total_bot_volume,avg_safety_order = getBots(account_id,20)
-risk_factor = round(100/total_capital*total_bot_volume,2)
-print ('Riskfactor with '+ str(avg_safety_order) + ' SO: ' + str(risk_factor) + '%')
-
-#asuming avg_safety_order: 30
-total_bot_volume,avg_safety_order = getBots(account_id,30)
-risk_factor = round(100/total_capital*total_bot_volume,2)
-print ('Riskfactor with '+ str(avg_safety_order) + ' SO: ' + str(risk_factor) + '%')
+#
+# #asuming avg_safety_order: 20
+# total_bot_volume,avg_safety_order = getBots(account_id,20)
+# risk_factor = round(100/total_capital*total_bot_volume,2)
+# print ('Riskfactor with '+ str(avg_safety_order) + ' SO: ' + str(risk_factor) + '%')
+#
+# #asuming avg_safety_order: 30
+# total_bot_volume,avg_safety_order = getBots(account_id,30)
+# risk_factor = round(100/total_capital*total_bot_volume,2)
+# print ('Riskfactor with '+ str(avg_safety_order) + ' SO: ' + str(risk_factor) + '%')
