@@ -1,5 +1,6 @@
 import websocket,json,sys,os,requests
 from datetime import datetime,date
+from time import sleep
 
 pair ='maticusdt'
 interval = '1m'
@@ -129,24 +130,72 @@ def on_close(ws):
     print("### closed ###")
 
 
-def get_historical_data(symbol, interval,limit,startTime):
-    url = 'https://api.binance.com/api/v3/klines?symbol='+symbol+'&interval='+interval+'&limit='+str(limit)+'&startTime='+str(startTime)
+def get_historical_data(symbol, interval,limit,startTime=0,storeLocal=False):
+    if startTime !=0:
+        url = 'https://api.binance.com/api/v3/klines?symbol='+symbol+'&interval='+interval+'&limit='+str(limit)+'&startTime='+str(startTime)
+    else:
+        url = 'https://api.binance.com/api/v3/klines?symbol='+symbol+'&interval='+interval+'&limit='+str(limit)
     data = requests.get(url).json()
+
+    if storeLocal:
+        f = open(symbol+".txt", "a")
 
     for x in data:
         date = datetime.fromtimestamp(x[0]/1000)
         close_price = float(x[4])
-        print (date,close_price)
+        print (x[0],date,close_price)
         #return
+        if storeLocal:
+            f.write(str(date) + ';' + str(close_price) + '\n')
+
+        #this function handles all the trades..
         handle_trades(close_price)
 
 
+    if storeLocal:
+        f.close()
 
-#Simulate DCA with historical DATA starting from startTime...
-#YOU can change the interval to 5m or 1h.
-#This will simulate a much longer timeframe but is not accurate because we only look at the closing data of the candle.. 
-startTime = date(2021, 5, 19).strftime("%s")+'000'
-get_historical_data('MATICUSDT','1m',1500,startTime)
+    #next dataset
+    next_time = int(x[0]) + 60000
+
+    return next_time
+
+
+#This function processes the local data
+def processLocalData(symbol):
+    global bot_total_volume,buy_amount
+    f = open(symbol+".txt", "r")
+    content = f.readlines()
+    for line in content:
+        data = line.strip().split(';')
+        print (data[0])
+        last_price = float(data[1])
+        handle_trades(last_price)
+    bot_total_volume = bot_total_coins * last_price
+    print (f"total volume is {bot_total_volume}")
+    print (f"total available capital is {capital}")
+    print (f"total capital is {bot_total_volume + capital}")
+
+#This function downloads all 1m data into a local file. e.g. MATICUSDT.txt
+def downloadPriceData(symbol):
+    startTime = date(2021, 5, 19).strftime("%s")+'000'
+    endTime = datetime.now().strftime("%s")+'000'
+    lastTime = startTime
+
+    while int(endTime) > int(lastTime):
+        lastTime = get_historical_data(symbol,'1m',1500,lastTime,True)
+        sleep(1)
+
+
+#This function downloads all 1m data into a local file. e.g. MATICUSDT.txt
+#delete an existing file if you start this function again.. because it only appends data!!!!!!!!
+#downloadPriceData('MATICUSDT')
+
+#This function processes the local data
+#processLocalData('MATICUSDT')
+
+#This function get the last 1500 datapoints (limit)...
+get_historical_data('MATICUSDT','1m',1500)
 
 
 #LIVE SIMULATION!!!!
