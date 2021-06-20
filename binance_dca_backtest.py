@@ -197,10 +197,10 @@ def downloadPriceData(symbol):
 #downloadPriceData('MATICUSDT')
 
 #This function processes the local data
-processLocalData('MATICUSDT')
+#processLocalData('MATICUSDT')
 
 #This function get the last 1500 datapoints (limit)...
-#get_historical_data('MATICUSDT','1m',1500)
+get_historical_data('MATICUSDT','1m',1500)
 
 
 #LIVE SIMULATION!!!!
