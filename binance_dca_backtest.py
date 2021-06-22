@@ -15,7 +15,7 @@ dca_target_profit = 0.5
 dca_deviation_to_open_safety_order = 0.5
 dca_safety_order_step_scale = 1.15
 
-dca_trading_fee = 0.2
+dca_trading_fee = 0.075
 
 
 def reset_status():
