@@ -91,6 +91,7 @@ for bot in bot_data:
 
             #6 to update a bot, we need the id of the bot = bot['id'] and the whole bot-data which is in "bot"
             updateBot(bot['id'],bot)
+            sleep(1)
 
             #break ends the for loop... be careful!!!! you have to know what you are doing.. if you remove this... it will loop through all #std bots...
             #break
