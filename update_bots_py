@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from py3cw.request import Py3CW
+
+from time import sleep
+
+#playin around with 3commas api
+
+#put in you key and secret from 3commas
+key = ''
+secret = ''
+
+
+p3cw = Py3CW(
+    key=key,
+    secret=secret,
+    request_options={
+        'request_timeout': 10,
+        'nr_of_retries': 1,
+        'retry_status_codes': [502]
+    }
+)
+
+
+def getAccounts():
+    error, data = p3cw.request(
+        entity='accounts',
+        action=''
+    )
+    accounts=[]
+    for account in data:
+        account_id = account['id']
+        exchange_name = account['name']
+        accounts.append({'id':account_id,'exchange_name':exchange_name})
+    return accounts
+
+def getBotData(account_id,bot_id=0):
+    error, data = p3cw.request(
+        entity='bots',
+        action='',
+        payload={
+            #"scope": 'enabled',
+            "account_id" : account_id
+        }
+        )
+    return data
+
+def updateBot(bot_id,bot_data):
+    error, data = p3cw.request(
+        entity='bots',
+        action='update',
+        action_id = str(bot_id),
+        payload=bot_data
+        )
+    print(error)
+    print (data)
+
+def createBot(bot_data):
+    error, data = p3cw.request(
+        entity='bots',
+        action='create_bot',
+        payload=bot_data
+        )
+    print(error)
+    print (data)
+
+def updateDeal(deal_id,deal_data):
+    error, data = p3cw.request(
+        entity='deals',
+        action='update_deal',
+        action_id = str(deal_id),
+        payload=deal_data
+        )
+    print(error)
+    print (data)
+
+#1 Get the ID of the account (exchange) you want to update the bots!
+#print (getAccounts())
+
+#2 get the data of all bots, you have to remove the # and fill in the id of the account
+bot_data = getBotData(29904741)
+
+#3 loop through all the bots, i gave my bots hashtags to find e.g. my standard bots...
+for bot in bot_data:
+    #4 find all bots with the hashtag = #std
+    if bot['name'].find('#std') != -1:
+        print (bot['name'])
+        #5 i want to update my safety_order from 15.0 to 20.0 if it's 15.0
+        if bot['safety_order_volume']== '15.0':
+            bot['safety_order_volume']= '20.0'
+
+            #6 to update a bot, we need the id of the bot = bot['id'] and the whole bot-data which is in "bot"
+            updateBot(bot['id'],bot)
+
+            #break ends the for loop... be careful!!!! you have to know what you are doing.. if you remove this... it will loop through all #std bots...
+            #break
+
+
+#have not tested yet the createBot and updateDeal features...
+#for the #createBot function my idea is to make a template and name it "my_express bot #template.. then you could read it. change the pair and create a new one out of it..
+# for the udpateDeal function the idea is to increase the TP if the amount of SO is like 10 or so..
