@@ -10,7 +10,6 @@ from time import sleep
 key = ''
 secret = ''
 
-
 p3cw = Py3CW(
     key=key,
     secret=secret,
@@ -78,7 +77,7 @@ def updateDeal(deal_id,deal_data):
 #print (getAccounts())
 
 #2 get the data of all bots, you have to remove the # and fill in the id of the account
-bot_data = getBotData(put_in_account_id)
+bot_data = getBotData(your_account_id)
 
 #3 loop through all the bots, i gave my bots hashtags to find e.g. my standard bots...
 for bot in bot_data:
@@ -91,12 +90,21 @@ for bot in bot_data:
 
             #6 to update a bot, we need the id of the bot = bot['id'] and the whole bot-data which is in "bot"
             updateBot(bot['id'],bot)
-            sleep(1)
 
             #break ends the for loop... be careful!!!! you have to know what you are doing.. if you remove this... it will loop through all #std bots...
             #break
 
+# Example for creating a new simple bot based on an template.. you have to create one and name it whatever_bot #template..
+# bot_data = getBotData(your_account_id)
+# for bot in bot_data:
+#     if bot['name'].find('#template') != -1:
+#         print (bot)
+#         #All we have to change is the pair...a correct pair would be ['USDT_SOL'] or ['BUSD_ADA']
+#         bot['pairs'] = ['BUSD_ADA']
+#         #and give it a new name!!!
+#         bot['name'] = "ADA/BUSD #std"
+#         #lets create it..
+#         createBot(bot)
+#         break
 
-#have not tested yet the createBot and updateDeal features...
-#for the #createBot function my idea is to make a template and name it "my_express bot #template.. then you could read it. change the pair and create a new one out of it..
 # for the udpateDeal function the idea is to increase the TP if the amount of SO is like 10 or so..
