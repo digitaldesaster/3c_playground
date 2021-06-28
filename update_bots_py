@@ -5,10 +5,12 @@ from py3cw.request import Py3CW
 from time import sleep
 
 #playin around with 3commas api
+#this scripts assumes that you are trading USDT pairs.
 
 #put in you key and secret from 3commas
 key = ''
 secret = ''
+
 
 p3cw = Py3CW(
     key=key,
@@ -33,7 +35,18 @@ def getAccounts():
         accounts.append({'id':account_id,'exchange_name':exchange_name})
     return accounts
 
-def getBotData(account_id,bot_id=0):
+def getDealData(account_id):
+    error, data = p3cw.request(
+        entity='deals',
+        action='',
+        payload={
+            "scope": 'active',
+            "account_id" : account_id
+        }
+        )
+    return data
+
+def getBotData(account_id):
     error, data = p3cw.request(
         entity='bots',
         action='',
@@ -108,3 +121,12 @@ for bot in bot_data:
 #         break
 
 # for the udpateDeal function the idea is to increase the TP if the amount of SO is like 10 or so..
+# deal_data = getDealData(your_account_id)
+#
+# for deal in deal_data:
+#     #find the deal with the hashtag #adv
+#     if deal['bot_name'].find('#adv') !=-1:
+#         if deal['completed_safety_orders_count'] > 10:
+#             deal['take_profit']='5.0'
+#             updateDeal(deal['id'],deal)
+#             break
