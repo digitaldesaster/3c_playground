@@ -78,7 +78,7 @@ def updateDeal(deal_id,deal_data):
 #print (getAccounts())
 
 #2 get the data of all bots, you have to remove the # and fill in the id of the account
-bot_data = getBotData(29904741)
+bot_data = getBotData(put_in_account_id)
 
 #3 loop through all the bots, i gave my bots hashtags to find e.g. my standard bots...
 for bot in bot_data:
