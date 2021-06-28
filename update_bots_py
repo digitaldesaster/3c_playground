@@ -7,7 +7,7 @@ from time import sleep
 #playin around with 3commas api
 #this scripts assumes that you are trading USDT pairs.
 
-#put in you key and secret from 3commas
+#put in your key and secret from 3commas
 key = ''
 secret = ''
 
